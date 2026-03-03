@@ -1,5 +1,6 @@
 import express from "express";
 import userRoute from "./routes/userRoute.js"
+import diagramGenerator from "./routes/diagram.js";
 import globalErrorHandler from "./controllers/Error/globalErrorhandler.js";
 import CustomError from "./utils/customError.js";
 
@@ -13,6 +14,9 @@ app.use(express.json())
 
 //^ router that manages the authentication functionality
 app.use("/api/auth",userRoute);
+
+//^ route for handling diagram generation
+app.use("/api/diagram",diagramGenerator);
 
 //^ middleware for serving the static files
 // app.use(express.static("public"));
