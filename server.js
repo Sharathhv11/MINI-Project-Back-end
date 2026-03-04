@@ -8,6 +8,6 @@ const PORT = 5050 ;
 connectDB();
 
 
-app.listen(PORT,() => {
+app.listen(PORT,"0.0.0.0",() => {
     console.log(`server running on port ${PORT}`);
 })
