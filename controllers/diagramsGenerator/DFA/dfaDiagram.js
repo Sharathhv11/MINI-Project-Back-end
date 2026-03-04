@@ -32,9 +32,9 @@ const dfaDiagramGenerator = handleAsync(async (req, res, next) => {
   // Create a per-request Gemini client with the user's API key
   const userClient = new GoogleGenAI({ apiKey });
 
-  // Stage 1: Reasoning — use gemma-3-27b-it to analyze the DFA step-by-step
+  // Stage 1: Reasoning — use gemini-2.5-flash to analyze the DFA step-by-step
   const reasoningResponse = await userClient.models.generateContent({
-    model: "gemma-3-27b-it",
+    model: model || "gemini-2.5-flash",
     contents: [
       {
         role: "user",
