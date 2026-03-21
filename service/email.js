@@ -1,4 +1,5 @@
 import SibApiV3Sdk from "sib-api-v3-sdk";
+import { MailtrapClient } from "mailtrap";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -16,8 +17,13 @@ const LOGO_URL = "https://img.icons8.com/wired/128/000000/mind-map.png"; // Prof
 const client = SibApiV3Sdk.ApiClient.instance;
 const apiKey = client.authentications["api-key"];
 apiKey.apiKey = process.env.BREVO_API_KEY;
-
 const transactionalEmailApi = new SibApiV3Sdk.TransactionalEmailsApi();
+
+// Configure Mailtrap Client
+const mailtrapClient = new MailtrapClient({
+  endpoint: process.env.MAILTRAP_ENDPOINT || "https://send.api.mailtrap.io/",
+  token: process.env.MAILTRAP_TOKEN || "test_token",
+});
 
 // Sender configuration from environment variables
 const SENDER = {
@@ -25,17 +31,20 @@ const SENDER = {
   name: process.env.BREVO_SENDER_NAME || "GraphGen Support",
 };
 
+const MAILTRAP_SENDER = {
+  email: process.env.MAILTRAP_SENDER_EMAIL || "mailtrap@demomailtrap.com",
+  name: process.env.MAILTRAP_SENDER_NAME || "GraphGen Dev Support",
+};
+
 /**
  * Send Email Verification Mail (Onboarding)
  */
 async function mail(name, link, toEmail) {
   try {
-    await transactionalEmailApi.sendTransacEmail({
-      sender: SENDER,
-      to: [{ email: toEmail }],
-      subject: "Welcome to GraphGen! Verify Your Email",
-      textContent: `Hello ${name}, Welcome to GraphGen! Please verify your email: ${link}`,
-      htmlContent: `
+    const isDev = process.env.NODE_ENV === "DEV";
+    const subject = "Welcome to GraphGen! Verify Your Email";
+    const textContent = `Hello ${name}, Welcome to GraphGen! Please verify your email: ${link}`;
+    const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -86,10 +95,27 @@ async function mail(name, link, toEmail) {
   </div>
 </body>
 </html>
-      `,
-    });
+      `;
+
+    if (isDev) {
+      return await mailtrapClient.send({
+        from: MAILTRAP_SENDER,
+        to: [{ email: toEmail }],
+        subject,
+        text: textContent,
+        html: htmlContent,
+      });
+    } else {
+      return await transactionalEmailApi.sendTransacEmail({
+        sender: SENDER,
+        to: [{ email: toEmail }],
+        subject,
+        textContent,
+        htmlContent,
+      });
+    }
   } catch (error) {
-    console.error("Brevo verification email failed:", error);
+    console.error("Verification email failed:", error);
     return error;
   }
 }
@@ -99,12 +125,10 @@ async function mail(name, link, toEmail) {
  */
 async function mailForgotPassword(name, link, toEmail) {
   try {
-    await transactionalEmailApi.sendTransacEmail({
-      sender: SENDER,
-      to: [{ email: toEmail }],
-      subject: "Reset Your Password - GraphGen",
-      textContent: `Hello ${name}, Reset your password: ${link}`,
-      htmlContent: `
+    const isDev = process.env.NODE_ENV === "DEV";
+    const subject = "Reset Your Password - GraphGen";
+    const textContent = `Hello ${name}, Reset your password: ${link}`;
+    const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -155,10 +179,27 @@ async function mailForgotPassword(name, link, toEmail) {
   </div>
 </body>
 </html>
-      `,
-    });
+      `;
+
+    if (isDev) {
+      return await mailtrapClient.send({
+        from: MAILTRAP_SENDER,
+        to: [{ email: toEmail }],
+        subject,
+        text: textContent,
+        html: htmlContent,
+      });
+    } else {
+      return await transactionalEmailApi.sendTransacEmail({
+        sender: SENDER,
+        to: [{ email: toEmail }],
+        subject,
+        textContent,
+        htmlContent,
+      });
+    }
   } catch (error) {
-    console.error("Brevo forgot-password email failed:", error);
+    console.error("Forgot password email failed:", error);
     return error;
   }
 }
