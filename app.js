@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import userRoute from "./routes/userRoute.js"
 import diagramGenerator from "./routes/diagram.js";
+import historyRoute from "./routes/historyRoute.js";
 import globalErrorHandler from "./controllers/Error/globalErrorhandler.js";
 import CustomError from "./utils/customError.js";
 
@@ -32,6 +33,9 @@ app.use("/api/auth",userRoute);
 
 //^ route for handling diagram generation
 app.use("/api/diagram",diagramGenerator);
+
+//^ route for handling user history
+app.use("/api/history", historyRoute);
 
 //^ middleware for serving the static files
 // app.use(express.static("public"));
